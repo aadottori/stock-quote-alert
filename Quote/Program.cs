@@ -26,19 +26,12 @@ class Program
         // Monitorar a cotação do ativo em loop até ser parado
         while (true)
         {
+            //Verifica a cotação
             double currentPrice = GetStockQuote(stockSymbol);
             Console.WriteLine($"[{DateTime.Now}] {stockSymbol}: {currentPrice}");
 
-            if (currentPrice >= sellPrice)
-            {
-                SendEmail($"Alerta de venda - {stockSymbol}",
-                           $"O preço de {currentPrice:C} está acima do valor de venda de {sellPrice:C}.");
-            }
-
-            if (currentPrice <= buyPrice)
-            {
-                SendEmail($"Alerta de compra - {stockSymbol}", $"O preço de {currentPrice:C} está abaixo do valor de compra de {buyPrice:C}.");
-            }
+            //Compara os preços e dispara ou não o email.
+            comparePrice(stockSymbol, currentPrice, sellPrice, buyPrice);
 
             // Aguardar 5 segundos antes de verificar novamente a cotação
             Thread.Sleep(5000);
@@ -55,8 +48,6 @@ class Program
         smtpUsername = lines[3];
         smtpPassword = lines[4];
     }
-
-
 
     static double GetStockQuote(string stockSymbol)
     {
@@ -76,10 +67,31 @@ class Program
         dynamic json = JsonConvert.DeserializeObject(responseBody);
         double currentPrice = json["quoteResponse"]["result"][0]["regularMarketPrice"];
 
-
         return currentPrice;
     }
 
+
+    static string comparePrice(string stockSymbol, double currentPrice, double sellPrice, double buyPrice)
+    {
+
+        if (currentPrice >= sellPrice)
+        {
+            SendEmail($"Alerta de venda - {stockSymbol}",
+                       $"O preço de {currentPrice:C} está acima do valor de venda de {sellPrice:C}.");
+            return "Sell";
+        }
+
+        if (currentPrice <= buyPrice)
+        {
+            SendEmail($"Alerta de compra - {stockSymbol}", $"O preço de {currentPrice:C} está abaixo do valor de compra de {buyPrice:C}.");
+            return "Buy";
+        }
+
+        else
+        {
+            return "Wait";
+        }
+    }
 
     static void SendEmail(string subject, string body)
     {
