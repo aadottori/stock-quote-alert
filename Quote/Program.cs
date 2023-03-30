@@ -29,15 +29,15 @@ class Program
             double currentPrice = GetStockQuote(stockSymbol);
             Console.WriteLine($"[{DateTime.Now}] {stockSymbol}: {currentPrice}");
 
-            if (currentPrice <= sellPrice)
+            if (currentPrice >= sellPrice)
             {
                 SendEmail($"Alerta de venda - {stockSymbol}",
-                           $"O preço de {currentPrice:C} está abaixo do valor de venda de {sellPrice:C}.");
+                           $"O preço de {currentPrice:C} está acima do valor de venda de {sellPrice:C}.");
             }
 
-            if (currentPrice >= buyPrice)
+            if (currentPrice <= buyPrice)
             {
-                SendEmail($"Alerta de compra - {stockSymbol}", $"O preço de {currentPrice:C} está acima do valor de compra de {buyPrice:C}.");
+                SendEmail($"Alerta de compra - {stockSymbol}", $"O preço de {currentPrice:C} está abaixo do valor de compra de {buyPrice:C}.");
             }
 
             // Aguardar 5 segundos antes de verificar novamente a cotação
