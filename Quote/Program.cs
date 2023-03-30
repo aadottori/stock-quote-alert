@@ -53,4 +53,24 @@ class Program
 
         return currentPrice;
     }
+
+
+    static void SendEmail(string subject, string body)
+    {
+        // Configurar o cliente SMTP
+        SmtpClient client = new SmtpClient(smtpServer, smtpPort);
+        client.EnableSsl = true;
+        client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
+
+        // Criar a mensagem de e-mail
+        MailMessage message = new MailMessage();
+        message.From = new MailAddress(smtpUsername);
+        message.To.Add(emailRecipient);
+        message.Subject = subject;
+        message.Body = body;
+
+        // Enviar o e-mail
+        client.Send(message);
+        Console.WriteLine($"[{DateTime.Now}] E-mail enviado: {subject}");
+    }
 }
