@@ -16,7 +16,9 @@ class Program
 
     static void Main(string[] args)
     {
-        
+        string stockSymbol = args[0] + ".SA";
+        double sellPrice = double.Parse(args[1]);
+        double buyPrice = double.Parse(args[2]);
     }
 
     static void ReadConfiguration()
