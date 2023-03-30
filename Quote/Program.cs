@@ -19,6 +19,30 @@ class Program
         string stockSymbol = args[0] + ".SA";
         double sellPrice = double.Parse(args[1]);
         double buyPrice = double.Parse(args[2]);
+
+        // Ler as configurações do arquivo de configuração
+        ReadConfiguration();
+
+        // Monitorar a cotação do ativo em loop até ser parado
+        while (true)
+        {
+            double currentPrice = GetStockQuote(stockSymbol);
+            Console.WriteLine($"[{DateTime.Now}] {stockSymbol}: {currentPrice}");
+
+            if (currentPrice <= sellPrice)
+            {
+                SendEmail($"Alerta de venda - {stockSymbol}",
+                           $"O preço de {currentPrice:C} está abaixo do valor de venda de {sellPrice:C}.");
+            }
+
+            if (currentPrice >= buyPrice)
+            {
+                SendEmail($"Alerta de compra - {stockSymbol}", $"O preço de {currentPrice:C} está acima do valor de compra de {buyPrice:C}.");
+            }
+
+            // Aguardar 5 segundos antes de verificar novamente a cotação
+            Thread.Sleep(5000);
+        }
     }
 
     static void ReadConfiguration()
