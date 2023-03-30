@@ -1,5 +1,0 @@
-meuemail@gmail.com
-smtp.gmail.com
-587
-meuemail@gmail.com
-minhasenha

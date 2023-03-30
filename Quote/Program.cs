@@ -16,12 +16,30 @@ class Program
 
     static void Main(string[] args)
     {
+        if (args.Length != 3)
+        {
+            Console.WriteLine("Erro: informe o ativo a ser monitorado, o preço de referência para venda e o preço de referência para compra como parâmetros da linha de comando.");
+            return;
+        }
         string stockSymbol = args[0] + ".SA";
         double sellPrice = double.Parse(args[1]);
         double buyPrice = double.Parse(args[2]);
 
         // Ler as configurações do arquivo de configuração
-        ReadConfiguration();
+        try
+        {
+            Configuration config = ReadConfiguration();
+            string emailRecipient = config.emailRecipient;
+            string smtpServer = config.smtpServer;
+            int smtpPort = config.smtpPort;
+            string smtpUsername = config.smtpUsername;
+            string smtpPassword = config.smtpPassword;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Erro ao ler arquivo de configuração: " + ex.Message);
+            return;
+        }
 
         // Monitorar a cotação do ativo em loop até ser parado
         while (true)
@@ -36,17 +54,6 @@ class Program
             // Aguardar 5 segundos antes de verificar novamente a cotação
             Thread.Sleep(5000);
         }
-    }
-
-    static void ReadConfiguration()
-    {
-        // Ler as configurações do arquivo de configuração
-        string[] lines = File.ReadAllLines("config.txt");
-        emailRecipient = lines[0];
-        smtpServer = lines[1];
-        smtpPort = int.Parse(lines[2]);
-        smtpUsername = lines[3];
-        smtpPassword = lines[4];
     }
 
     static double GetStockQuote(string stockSymbol)
@@ -111,4 +118,21 @@ class Program
         client.Send(message);
         Console.WriteLine($"[{DateTime.Now}] E-mail enviado: {subject}");
     }
+
+    public class Configuration
+    {
+        public string emailRecipient { get; set; }
+        public string smtpServer { get; set; }
+        public int smtpPort { get; set; }
+        public string smtpUsername { get; set; }
+        public string smtpPassword { get; set; }
+    }
+
+    public static Configuration ReadConfiguration()
+    {
+        string jsonString = File.ReadAllText("config.json");
+        Configuration config = System.Text.Json.JsonSerializer.Deserialize<Configuration>(jsonString);
+        return config;
+    }
+
 }
