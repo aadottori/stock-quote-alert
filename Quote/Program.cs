@@ -61,7 +61,7 @@ class Program
                           config.SmtpPassword);
             };
 
-            Thread.Sleep(5000);
+            await Task.Delay(5000);
         }
     }
 
@@ -90,22 +90,15 @@ class Program
 
 
 
-    static string comparePrice(string stockSymbol, double currentPrice, double sellPrice, double buyPrice)
+    static string ComparePrice(string stockSymbol, double currentPrice, double sellPrice, double buyPrice)
     {
-        if (currentPrice >= sellPrice)
+        return currentPrice switch
         {
-            return "Sell";
-        }
-        if (currentPrice <= buyPrice)
-        {
-            return "Buy";
-        }
-        else
-        {
-            return "Wait";
-        }
+            _ when currentPrice >= sellPrice => "Sell",
+            _ when currentPrice <= buyPrice => "Buy",
+            _ => "Wait"
+        };
     }
-
 
 
     static void SendEmail(string Subject,
