@@ -9,7 +9,7 @@ using System.Threading;
 class Program
 {
 
-    static  async Task Main(string[] args)
+    static async Task Main(string[] args)
     {
         if (args.Length != 3)
         {
@@ -38,7 +38,7 @@ class Program
         while (true)
         {
             //Verifica a cotação
-            double currentPrice = GetStockQuote(stockSymbol);
+            double currentPrice = await GetStockQuote(stockSymbol);
             Console.WriteLine($"[{DateTime.Now}] {stockSymbol}: {currentPrice}");
 
             //Compara os preços e dispara ou não o email.
@@ -70,29 +70,28 @@ class Program
         }
     }
 
-    static double GetStockQuote(string stockSymbol)
+    static async Task<double> GetStockQuote(string stockSymbol)
     {
         // Definir URL da API do Yahoo Finance para a cotação do ativo
         string url = $"https://query1.finance.yahoo.com/v7/finance/quote?symbols={stockSymbol}";
 
-        // Fazer requisição HTTP para obter a cotação
-        string responseBody = null;
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+        using (var client = new HttpClient())
         {
-            responseBody = reader.ReadToEnd();
+            // Fazer requisição HTTP para obter a cotação
+            var response = await client.GetAsync(url);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            // Analisar a resposta JSON para obter a cotação atual
+            var json = JsonDocument.Parse(responseBody);
+            double currentPrice = json.RootElement
+                                        .GetProperty("quoteResponse")
+                                        .GetProperty("result")[0]
+                                        .GetProperty("regularMarketPrice")
+                                        .GetDouble();
+
+            return currentPrice;
         }
-
-        dynamic json = JsonSerializer.Deserialize<JsonElement>(responseBody);
-        double currentPrice = json.GetProperty("quoteResponse")
-                                  .GetProperty("result")[0]
-                                  .GetProperty("regularMarketPrice")
-                                  .GetDouble();
-
-        return currentPrice;
     }
-
 
 
 
