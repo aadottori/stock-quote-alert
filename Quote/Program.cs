@@ -8,11 +8,6 @@ using Newtonsoft.Json;
 
 class Program
 {
-    string EmailTo;
-    string SmtpServer;
-    int SmtpPort;
-    string EmailFrom;
-    string SmtpPassword;
 
     static void Main(string[] args)
     {
@@ -21,7 +16,7 @@ class Program
             Console.WriteLine("Erro: informe o ativo a ser monitorado, o preço de referência para venda e o preço de referência para compra como parâmetros da linha de comando.");
             return;
         }
-        string stockSymbol = args[0] + ".SA";
+        string stockSymbol = $"{args[0]}.SA";
         double sellPrice = double.Parse(args[1]);
         double buyPrice = double.Parse(args[2]);
 
@@ -32,16 +27,11 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Erro ao ler arquivo de configuração: " + ex.Message);
+            Console.WriteLine($"Erro ao ler arquivo de configuração: {ex.Message}");
             return;
         }
 
         Configuration config = ReadConfiguration();
-        string EmailTo = config.EmailTo;
-        string SmtpServer = config.SmtpServer;
-        int SmtpPort = config.SmtpPort;
-        string EmailFrom = config.EmailFrom;
-        string SmtpPassword = config.SmtpPassword;
 
 
         // Monitorar a cotação do ativo em loop até ser parado
@@ -58,21 +48,21 @@ class Program
             {
                 SendEmail($"Alerta de venda - {stockSymbol}",
                           $"O preço de {currentPrice:C} está acima do valor de venda de {sellPrice:C}.",
-                          EmailFrom,
-                          EmailTo,
-                          SmtpPort,
-                          SmtpServer,
-                          SmtpPassword);
+                          config.EmailFrom,
+                          config.EmailTo,
+                          config.SmtpPort,
+                          config.SmtpServer,
+                          config.SmtpPassword);
             }
             else if (action == "Buy")
             {
                 SendEmail($"Alerta de compra - {stockSymbol}",
                           $"O preço de {currentPrice:C} está abaixo do valor de compra de {buyPrice:C}.",
-                          EmailFrom,
-                          EmailTo,
-                          SmtpPort,
-                          SmtpServer,
-                          SmtpPassword);
+                          config.EmailFrom,
+                          config.EmailTo,
+                          config.SmtpPort,
+                          config.SmtpServer,
+                          config.SmtpPassword);
             };
 
             // Aguardar 5 segundos antes de verificar novamente a cotação
@@ -86,9 +76,9 @@ class Program
         string url = $"https://query1.finance.yahoo.com/v7/finance/quote?symbols={stockSymbol}";
 
         // Fazer requisição HTTP para obter a cotação
+        string responseBody = null;
         HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
         HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        string responseBody = null;
         using (StreamReader reader = new StreamReader(response.GetResponseStream()))
         {
             responseBody = reader.ReadToEnd();
