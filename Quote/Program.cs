@@ -8,11 +8,11 @@ using Newtonsoft.Json;
 
 class Program
 {
-    static string emailRecipient;
-    static string smtpServer;
-    static int smtpPort;
-    static string smtpUsername;
-    static string smtpPassword;
+    string EmailTo;
+    string SmtpServer;
+    int SmtpPort;
+    string EmailFrom;
+    string SmtpPassword;
 
     static void Main(string[] args)
     {
@@ -28,18 +28,21 @@ class Program
         // Ler as configurações do arquivo de configuração
         try
         {
-            Configuration config = ReadConfiguration();
-            string emailRecipient = config.emailRecipient;
-            string smtpServer = config.smtpServer;
-            int smtpPort = config.smtpPort;
-            string smtpUsername = config.smtpUsername;
-            string smtpPassword = config.smtpPassword;
+            Configuration configuration = ReadConfiguration();
         }
         catch (Exception ex)
         {
             Console.WriteLine("Erro ao ler arquivo de configuração: " + ex.Message);
             return;
         }
+
+        Configuration config = ReadConfiguration();
+        string EmailTo = config.EmailTo;
+        string SmtpServer = config.SmtpServer;
+        int SmtpPort = config.SmtpPort;
+        string EmailFrom = config.EmailFrom;
+        string SmtpPassword = config.SmtpPassword;
+
 
         // Monitorar a cotação do ativo em loop até ser parado
         while (true)
@@ -49,7 +52,28 @@ class Program
             Console.WriteLine($"[{DateTime.Now}] {stockSymbol}: {currentPrice}");
 
             //Compara os preços e dispara ou não o email.
-            comparePrice(stockSymbol, currentPrice, sellPrice, buyPrice);
+            string action = comparePrice(stockSymbol, currentPrice, sellPrice, buyPrice);
+
+            if (action == "Sell")
+            {
+                SendEmail($"Alerta de venda - {stockSymbol}",
+                          $"O preço de {currentPrice:C} está acima do valor de venda de {sellPrice:C}.",
+                          EmailFrom,
+                          EmailTo,
+                          SmtpPort,
+                          SmtpServer,
+                          SmtpPassword);
+            }
+            else if (action == "Buy")
+            {
+                SendEmail($"Alerta de compra - {stockSymbol}",
+                          $"O preço de {currentPrice:C} está abaixo do valor de compra de {buyPrice:C}.",
+                          EmailFrom,
+                          EmailTo,
+                          SmtpPort,
+                          SmtpServer,
+                          SmtpPassword);
+            };
 
             // Aguardar 5 segundos antes de verificar novamente a cotação
             Thread.Sleep(5000);
@@ -80,53 +104,65 @@ class Program
 
     static string comparePrice(string stockSymbol, double currentPrice, double sellPrice, double buyPrice)
     {
-
         if (currentPrice >= sellPrice)
         {
-            SendEmail($"Alerta de venda - {stockSymbol}",
-                       $"O preço de {currentPrice:C} está acima do valor de venda de {sellPrice:C}.");
             return "Sell";
         }
-
         if (currentPrice <= buyPrice)
         {
-            SendEmail($"Alerta de compra - {stockSymbol}", $"O preço de {currentPrice:C} está abaixo do valor de compra de {buyPrice:C}.");
             return "Buy";
         }
-
         else
         {
             return "Wait";
         }
     }
 
-    static void SendEmail(string subject, string body)
+
+    static void SendEmail(string Subject,
+                                 string Body,
+                                 string EmailFrom,
+                                 string EmailTo,
+                                 int SmtpPort,
+                                 string SmtpServer,
+                                 string SmtpPassword)
     {
-        // Configurar o cliente SMTP
-        SmtpClient client = new SmtpClient(smtpServer, smtpPort);
+        MailAddress from = new MailAddress(EmailFrom);
+        MailAddress to = new MailAddress(EmailTo);
+
+        MailMessage message = new MailMessage(from, to);
+        message.Subject = Subject;
+        message.Body = Body;
+
+        SmtpClient client = new SmtpClient(SmtpServer);
+
+        // Include credentials if the server requires them.
+        client.UseDefaultCredentials = false;
+        client.Credentials = new NetworkCredential(EmailFrom, SmtpPassword);
         client.EnableSsl = true;
-        client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
 
-        // Criar a mensagem de e-mail
-        MailMessage message = new MailMessage();
-        message.From = new MailAddress(smtpUsername);
-        message.To.Add(emailRecipient);
-        message.Subject = subject;
-        message.Body = body;
-
-        // Enviar o e-mail
-        client.Send(message);
-        Console.WriteLine($"[{DateTime.Now}] E-mail enviado: {subject}");
+        try
+        {
+            client.Send(message);
+            Console.WriteLine("Email enviado.");
+            return;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Não foi possível criar a mensagem: {ex.ToString()}");
+        }
     }
+
 
     public class Configuration
     {
-        public string emailRecipient { get; set; }
-        public string smtpServer { get; set; }
-        public int smtpPort { get; set; }
-        public string smtpUsername { get; set; }
-        public string smtpPassword { get; set; }
+        public string EmailTo { get; set; }
+        public string SmtpServer { get; set; }
+        public int SmtpPort { get; set; }
+        public string EmailFrom { get; set; }
+        public string SmtpPassword { get; set; }
     }
+
 
     public static Configuration ReadConfiguration()
     {

@@ -1,7 +1,7 @@
 {
-  "Email": "seu-email@example.com",
-  "SmtpServer": "smtp.example.com",
-  "SmtpPort": 587,
-  "SmtpUsername": "seu-username",
-  "SmtpPassword": "sua-senha"
+  "EmailTo": "stock.quote.alert@gmail.com",
+  "SmtpServer": "smtp.gmail.com",
+  "SmtpPort": 1025,
+  "EmailFrom": "stock.quote.alert@gmail.com",
+  "SmtpPassword": "zputllpklkdxymkw"
 }
