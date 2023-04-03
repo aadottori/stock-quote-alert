@@ -4,12 +4,12 @@ using System.IO;
 using System.Net.Mail;
 using System.Text.Json;
 using System.Threading;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 
 class Program
 {
 
-    static void Main(string[] args)
+    static  async Task Main(string[] args)
     {
         if (args.Length != 3)
         {
@@ -84,12 +84,16 @@ class Program
             responseBody = reader.ReadToEnd();
         }
 
-        // Analisar a resposta JSON para obter a cotação atual
-        dynamic json = JsonConvert.DeserializeObject(responseBody);
-        double currentPrice = json["quoteResponse"]["result"][0]["regularMarketPrice"];
+        dynamic json = JsonSerializer.Deserialize<JsonElement>(responseBody);
+        double currentPrice = json.GetProperty("quoteResponse")
+                                  .GetProperty("result")[0]
+                                  .GetProperty("regularMarketPrice")
+                                  .GetDouble();
 
         return currentPrice;
     }
+
+
 
 
     static string comparePrice(string stockSymbol, double currentPrice, double sellPrice, double buyPrice)
