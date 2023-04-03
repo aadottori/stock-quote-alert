@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Net;
-using System.IO;
 using System.Net.Mail;
 using System.Text.Json;
-using System.Threading;
-//using Newtonsoft.Json;
+
 
 class Program
 {
@@ -37,11 +35,9 @@ class Program
         // Monitorar a cotação do ativo em loop até ser parado
         while (true)
         {
-            //Verifica a cotação
             double currentPrice = await GetStockQuote(stockSymbol);
             Console.WriteLine($"[{DateTime.Now}] {stockSymbol}: {currentPrice}");
 
-            //Compara os preços e dispara ou não o email.
             string action = comparePrice(stockSymbol, currentPrice, sellPrice, buyPrice);
 
             if (action == "Sell")
@@ -65,7 +61,6 @@ class Program
                           config.SmtpPassword);
             };
 
-            // Aguardar 5 segundos antes de verificar novamente a cotação
             Thread.Sleep(5000);
         }
     }
@@ -83,13 +78,13 @@ class Program
 
             // Analisar a resposta JSON para obter a cotação atual
             var json = JsonDocument.Parse(responseBody);
-            double currentPrice = json.RootElement
+            double? currentPrice = json.RootElement
                                         .GetProperty("quoteResponse")
                                         .GetProperty("result")[0]
                                         .GetProperty("regularMarketPrice")
                                         .GetDouble();
 
-            return currentPrice;
+            return currentPrice ?? throw new Exception("Price not found.");
         }
     }
 
@@ -112,6 +107,7 @@ class Program
     }
 
 
+
     static void SendEmail(string Subject,
                                  string Body,
                                  string EmailFrom,
@@ -128,8 +124,6 @@ class Program
         message.Body = Body;
 
         SmtpClient client = new SmtpClient(SmtpServer);
-
-        // Include credentials if the server requires them.
         client.UseDefaultCredentials = false;
         client.Credentials = new NetworkCredential(EmailFrom, SmtpPassword);
         client.EnableSsl = true;
