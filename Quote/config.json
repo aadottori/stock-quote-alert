@@ -1,7 +1,7 @@
 {
-  "EmailTo": "stock.quote.alert@gmail.com",
-  "SmtpServer": "smtp.gmail.com",
-  "SmtpPort": 1025,
-  "EmailFrom": "stock.quote.alert@gmail.com",
-  "SmtpPassword": "zputllpklkdxymkw"
+  "emailTo": "stock.quote.alert@gmail.com",
+  "smtpServer": "smtp.gmail.com",
+  "smtpPort": 1025,
+  "emailFrom": "stock.quote.alert@gmail.com",
+  "smtpPassword": "zputllpklkdxymkw"
 }
