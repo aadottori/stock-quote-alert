@@ -14,4 +14,4 @@ dotnet run PETR4 22.50 22.40
 dotnet run PETR4 22.50 22.40 ABEV3 14.45 14.30
 ```
 
-
+O arquivo principal é o "Program.cs", e todos os outros são orquestrados  a partir dele.
