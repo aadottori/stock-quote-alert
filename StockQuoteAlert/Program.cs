@@ -10,22 +10,31 @@ namespace stockQuoteAlert
     {
         static async Task Main(string[] args)
         {
-            if (args.Length != 3)
-            {
-                Console.WriteLine("Erro: por favor forneça o símbolo da ação para monitorar, o preço de referência de venda e o preço de referência de compra como argumentos de linha de comando.\n\n\n\n");
-                return;
-            }
-
-            string stockSymbol = $"{args[0]}.SA";
-            double sellPrice = double.Parse(args[1]);
-            double buyPrice = double.Parse(args[2]);
-
             ConfigurationReader configurationReader = new ConfigurationReader();
             Configuration config = configurationReader.ReadConfiguration();
 
             IStockQuoteApi stockQuoteApi = new YahooFinanceApi();
-            StockMonitor stockMonitor = new StockMonitor(stockSymbol, sellPrice, buyPrice, config, stockQuoteApi);
-            await stockMonitor.StartMonitoring();
+
+            List<Task> monitoringTasks = new List<Task>();
+
+            if (args.Length < 3 || args.Length%3 != 0)
+            {
+                Console.WriteLine("As ações devem ser informadas como por exemplo: PETR4 22.56 22.40 ABEV3 14.50 14.30");
+                return;
+            }
+
+            for (int i=0; i<args.Length/3; i++)
+            {
+                string stockSymbol = $"{args[3*i]}.SA";
+                double sellPrice = double.Parse(args[3*i+1]);
+                double buyPrice = double.Parse(args[3*i+2]);
+                Stock stock = new Stock(stockSymbol, sellPrice, buyPrice);
+
+                StockMonitor stockMonitor = new StockMonitor(stockSymbol, sellPrice, buyPrice, config, stockQuoteApi);
+                monitoringTasks.Add(stockMonitor.StartMonitoring());
+
+            }
+            await Task.WhenAll(monitoringTasks);
         }
     }
 }

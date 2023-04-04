@@ -7,8 +7,8 @@ namespace stockQuoteAlert
         {
             return currentPrice switch
             {
-                _ when currentPrice >= sellPrice => "Sell",
-                _ when currentPrice <= buyPrice => "Buy",
+                _ when currentPrice > sellPrice => "Sell",
+                _ when currentPrice < buyPrice => "Buy",
                 _ => "Wait"
             };
         }

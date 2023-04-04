@@ -38,7 +38,7 @@ namespace stockQuoteAlert
             try
             {
                 client.Send(message);
-                Console.WriteLine("Email enviado.");
+                Console.WriteLine($"Email enviado: {subject}.");
                 return;
             }
             catch (Exception ex)
