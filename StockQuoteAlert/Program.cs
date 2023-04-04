@@ -25,7 +25,7 @@ namespace stockQuoteAlert
 
             for (int i=0; i<args.Length/3; i++)
             {
-                string stockSymbol = $"{args[3*i]}.SA";
+                string stockSymbol = args[3*i];
                 double sellPrice = double.Parse(args[3*i+1]);
                 double buyPrice = double.Parse(args[3*i+2]);
                 Stock stock = new Stock(stockSymbol, sellPrice, buyPrice);

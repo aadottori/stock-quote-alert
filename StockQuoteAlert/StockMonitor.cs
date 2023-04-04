@@ -25,7 +25,7 @@ namespace stockQuoteAlert
         {
             while (true)
             {
-                double currentPrice = await _stockQuoteApi.GetStockQuote(_stockSymbol);
+                double currentPrice = await _stockQuoteApi.GetStockQuote($"{_stockSymbol}.SA");
                 Console.WriteLine($"[{DateTime.Now}] {_stockSymbol}: {currentPrice}");
 
                 string action = PriceComparer.ComparePrice(currentPrice, _sellPrice, _buyPrice);
@@ -35,12 +35,12 @@ namespace stockQuoteAlert
                 if (action == "Sell")
                 {
                     sender.Send($"Alerta de venda - {_stockSymbol}",
-                                     $"O preço de R${currentPrice} está acima do preço de venda de referência R${_sellPrice}.");
+                                     $"O preço de R${CurrencyFormatter.FormatCurrency(currentPrice)} está acima do preço de venda de referência R${CurrencyFormatter.FormatCurrency(_sellPrice)}.");
                 }
                 else if (action == "Buy")
                 {
                     sender.Send($"Alerta de compra - {_stockSymbol}",
-                                          $"O preço de R${currentPrice} está abaixo do preço de compra de referência R${_buyPrice}.");
+                                          $"O preço de R${CurrencyFormatter.FormatCurrency(currentPrice)} está abaixo do preço de compra de referência R${CurrencyFormatter.FormatCurrency(_buyPrice)}.");
                 }
 
                 await Task.Delay(5000);
